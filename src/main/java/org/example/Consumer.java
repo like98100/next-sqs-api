@@ -19,36 +19,38 @@ public class Consumer {
         String queueUrl = "https://sqs.ap-northeast-2.amazonaws.com/077672914621/go-queue";
 
         try {
-            ReceiveMessageRequest receiveMessageRequest = ReceiveMessageRequest.builder()
-                    .queueUrl(queueUrl)
-                    .maxNumberOfMessages(10)
-                    .waitTimeSeconds(20)
-                    .build();
+            for(int i = 0; i < 30; i++) {
+                ReceiveMessageRequest receiveMessageRequest = ReceiveMessageRequest.builder()
+                        .queueUrl(queueUrl)
+                        .maxNumberOfMessages(10)
+                        .waitTimeSeconds(20)
+                        .build();
 
-            List<Message> messages = sqsClient.receiveMessage(receiveMessageRequest).messages();
+                List<Message> messages = sqsClient.receiveMessage(receiveMessageRequest).messages();
 
-            if(messages.isEmpty()) {
-                System.out.println("No messages received.");
-            } else {
-                for(Message message : messages) {
-                    System.out.println("Recieved message: " + message.body());
+                if(messages.isEmpty()) {
+                    System.out.println("No messages received.");
+                } else {
+                    for(Message message : messages) {
+                        System.out.println("Recieved message: " + message.body());
 
-                    DeleteMessageRequest deleteMessageRequest
-                            = DeleteMessageRequest.builder()
-                            .queueUrl(queueUrl)
-                            .receiptHandle(message.receiptHandle())
-                            .build();
+                        DeleteMessageRequest deleteMessageRequest
+                                = DeleteMessageRequest.builder()
+                                .queueUrl(queueUrl)
+                                .receiptHandle(message.receiptHandle())
+                                .build();
 
-                    sqsClient.deleteMessage(deleteMessageRequest);
+                        sqsClient.deleteMessage(deleteMessageRequest);
 
-                    System.out.println("Deleted message ID: " + message.messageId());
+                        System.out.println("Deleted message ID: " + message.messageId());
+                    }
                 }
             }
 
         } catch(Exception e) {
-
+            e.printStackTrace();
         } finally {
-
+            sqsClient.close();
         }
 
     }
